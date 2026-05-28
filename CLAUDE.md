@@ -12,7 +12,10 @@ This is a **microbiome data science project** set up by Liam Campbell (liamc0004
 
 ## Progress
 - **Day 1 — Complete ✅** (2026-05-22): Environment setup, venv, libraries, folder structure, `01_exploration.ipynb` created and opened in JupyterLab.
-- **Day 2 — Up next (2026-05-23)**: Biology crash course + download HMP2 dataset from ibdmdb.org
+- **Day 2 — Complete ✅** (2026-05-23): Biology crash course + downloaded HMP2 dataset (metadata CSV + taxonomic profiles TSV) from ibdmdb.org.
+- **Day 3 — Complete ✅** (2026-05-24): Data exploration — answered 5 key questions (178 samples, 982 taxa, 91.7% sparsity, top taxa identified, 9 low-quality samples flagged). Bar chart saved to `figures/`.
+- **Day 4 — Complete ✅** (2026-05-24): Compositional data explainer + CLR transform written in `01_exploration.ipynb`. `clr_transform()` function ready for use in modeling.
+- **Day 5 — Up next (2026-05-26)**: Alpha diversity — Shannon diversity boxplot, Mann-Whitney test (Crohn's vs healthy).
 
 ## Environment
 - **OS:** macOS
@@ -31,7 +34,7 @@ jupyter notebook
 ```
 
 ## Reference
-- A 10-day project plan exists: `microbiome_10day_plan.md` — check this for goals, milestones, and task breakdown.
+- The primary roadmap is `2month_roadmap.md` — check this for weekly goals and milestone checkpoints. The old 10-day plan is deprecated.
 
 ## Notes for Claude
 - The user is early in the project — setup phase is complete, exploration is just beginning.
