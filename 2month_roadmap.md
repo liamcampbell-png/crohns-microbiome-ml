@@ -12,8 +12,8 @@
 - [x] Compositional data understood — know why raw counts break ML and what CLR solves
 - [x] CLR transform written and tested in notebook — ready to use in modeling
 - [x] Alpha diversity computed — Shannon diversity calculated per sample, boxplot (CD vs nonIBD) saved, Mann-Whitney p-value reported, biological finding noted (do Crohn's patients have lower diversity?)
-- [ ] Beta diversity computed — Bray-Curtis distance matrix calculated, saved as CSV
-- [ ] UMAP visualization done — 2D plot colored by diagnosis saved to `figures/`, visual separation between CD and healthy noted in a markdown cell
+- [x] Beta diversity computed — Bray-Curtis distance matrix calculated, saved as CSV
+- [x] UMAP visualization done — 2D plot colored by diagnosis saved to `figures/`, visual separation between CD and healthy noted in a markdown cell
 
 ---
 
