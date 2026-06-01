@@ -21,9 +21,9 @@
 
 - [x] Notebook cleaned up — clear markdown commentary above every code block, runs top-to-bottom with no errors on a fresh kernel
 - [x] GitHub updated — everything committed and pushed, README describes the project and how to run it
-- [x] Random Forest baseline trained — CLR-transformed OTU table used as features, 5-fold cross-validated AUC **0.817 ± 0.110** (exceeds Week 4 target of >0.80)
-- [x] Feature importance understood — top 20 most important taxa identified, importances spread across many taxa (no single dominant feature), SHAP needed for unbiased view
-- [ ] SHAP values computed — beeswarm plot saved to `figures/`, top bacteria identified
+- [x] Random Forest baseline trained — CLR-transformed OTU table used as features, 5-fold cross-validated AUC reported, understand what the number means
+- [x] Feature importance understood — top 20 most important taxa identified by the Random Forest, can explain what "importance" means in this context
+- [x] SHAP values computed — beeswarm plot saved to `figures/`, top bacteria identified
 - [ ] Biological sanity check done — Google top 5 SHAP taxa + "Crohn's disease", note whether the model rediscovered known biology (look for *Faecalibacterium prausnitzii*, *Roseburia*, *Ruminococcus*)
 
 ---
