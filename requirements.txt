@@ -1,0 +1,12 @@
+# Crohn's microbiome ML — pinned dependencies (Python 3.11)
+pandas==3.0.3
+numpy==2.4.6
+scikit-learn==1.8.0
+scipy==1.17.1
+matplotlib==3.10.9
+seaborn==0.13.2
+umap-learn==0.5.12
+shap==0.51.0
+xgboost==3.2.0
+statsmodels==0.14.6
+jupyterlab

@@ -11,16 +11,24 @@ This is a **microbiome data science project** set up by Liam Campbell (liamc0004
 - Jupyter notebooks started (`01_exploration.ipynb`) ✅
 
 ## Progress
-- **Day 1 — Complete ✅** (2026-05-22): Environment setup, venv, libraries, folder structure, `01_exploration.ipynb` created and opened in JupyterLab.
-- **Day 2 — Complete ✅** (2026-05-23): Biology crash course + downloaded HMP2 dataset (metadata CSV + taxonomic profiles TSV) from ibdmdb.org.
-- **Day 3 — Complete ✅** (2026-05-24): Data exploration — answered 5 key questions (178 samples, 982 taxa, 91.7% sparsity, top taxa identified, 9 low-quality samples flagged). Bar chart saved to `figures/`.
-- **Day 4 — Complete ✅** (2026-05-24): Compositional data explainer + CLR transform written in `01_exploration.ipynb`. `clr_transform()` function ready for use in modeling.
-- **Day 5 — Up next (2026-05-26)**: Alpha diversity — Shannon diversity boxplot, Mann-Whitney test (Crohn's vs healthy).
+- **Weeks 1–2 — Complete ✅**: Setup, EDA, CLR, alpha/beta diversity, UMAP, RF baseline + SHAP, CoRF experiment (`01_exploration.ipynb`).
+- **Week 3 — Complete ✅** (2026-06-11): Data-quality decisions (keep low-read samples, class-weight imbalance), compositional-methods writeup, 4-model comparison (`03_modeling.ipynb`).
+- **Week 4 — Complete ✅** (2026-06-11): RF / XGBoost / L1-LogReg / Linear SVM compared on one split; ROC curves; RF best (`03_modeling.ipynb`).
+- **Week 5 — Complete ✅** (2026-06-11): Longitudinal structure, diversity trajectories, disease-activity analysis, and the patient-leakage result — honest AUC ~0.68 via `GroupKFold` (`04_longitudinal.ipynb`).
+- **Week 6 — Complete ✅** (2026-06-11): SHAP interpretation, direction-of-effect, biological narrative (`05_interpretation.ipynb`).
+- **Week 7 — Complete ✅** (2026-06-11): `METHODS.md`, README rewrite, `requirements.txt`, all notebooks re-run clean.
+- **Week 8 — Draft done ✅** (2026-06-11): `BLOG.md` written. External actions left for Liam: publish blog, LinkedIn post.
+
+**Headline result:** a single 16S snapshot separates CD from healthy at AUC ~0.68 (honest, patient-grouped CV); the signal is depletion of health-associated commensals (significant diversity drop, p=0.007).
+
+**Two documented limitations:** taxa can't be mapped to species (opaque Greengenes OTU ids), and the cohort is too small to power within-CD activity contrasts. See `problems_log.md`.
+
+**Key files added this round:** `src/microbiome.py` (shared preprocessing), notebooks 03–05, `METHODS.md`, `BLOG.md`, `requirements.txt`.
 
 ## Environment
 - **OS:** macOS
 - **Virtual environment:** activate with `source venv/bin/activate` from the project root
-- **Jupyter:** launch with `jupyter notebook` or `jupyter lab` after activating the venv
+- **Jupyter:** launch with `python -m jupyterlab` (the `venv/bin/jupyter` shebang broke when the repo was moved — see `problems_log.md` #6)
 
 ## Notebook Naming Convention
 Notebooks are numbered sequentially, e.g.:
