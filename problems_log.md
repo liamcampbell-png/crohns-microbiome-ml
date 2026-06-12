@@ -45,3 +45,30 @@ pseudo = otu_prevalent.astype(float) + 0.5
 ```
 
 ---
+
+## 4. Cross-validation AUC was inflated by patient leakage
+
+**Date:** 2026-06-11
+**Problem:** The Random Forest scored AUC ~0.83 with plain 5-fold CV, but that overstated real performance.
+**Root cause:** HMP2 is longitudinal — participants contribute multiple visits. Shuffled sample-level folds put a patient's visits in both train and test, so the model partly learned to recognise *individuals*, not the disease.
+**Fix:** Evaluate with `GroupKFold` by `Participant ID` so every test patient is unseen. Honest AUC drops to ~0.68. This is now the reported headline (notebook 04).
+
+---
+
+## 5. Taxa can't be mapped to species names
+
+**Date:** 2026-06-11
+**Problem:** Biological interpretation (Week 6) and genus-level aggregation (Week 3) both need taxon names; the SHAP top taxa are opaque ids like `Unc03y4v`.
+**Root cause:** The HMP2 16S `taxonomic_profiles.tsv` labels rows with Greengenes-derived OTU ids and carries **no lineage column**. Most discriminative taxa are `Unc` (uncultured) clones with no validated species name. Resolving them needs the external Greengenes reference taxonomy, not in the downloaded file.
+**Fix:** Interpret at the level the data supports — importance + direction of effect — and connect to literature at the *pattern* level (commensal depletion). Logged as a documented limitation rather than faked. Genus aggregation marked blocked.
+
+---
+
+## 6. Broken `venv/bin/jupyter` shebang after repo move
+
+**Date:** 2026-06-11
+**Problem:** `venv/bin/jupyter ...` fails with `bad interpreter: /Users/liamcampbell/Desktop/crohns-microbiome-ml/venv/bin/python3: no such file`.
+**Root cause:** The project was moved/renamed; console-script shebangs in `venv/bin/` still point to the old absolute path. (Does not affect reproducibility — `venv/` is gitignored and the README rebuilds it.)
+**Fix / workaround:** Launch via the module form `venv/bin/python -m jupyterlab`, or recreate the venv (`python -m venv venv && pip install -r requirements.txt`). Notebooks here were executed programmatically with `nbclient`.
+
+---
