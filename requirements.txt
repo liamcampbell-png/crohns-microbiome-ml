@@ -9,4 +9,12 @@ umap-learn==0.5.12
 shap==0.51.0
 xgboost==3.2.0
 statsmodels==0.14.6
+optuna==4.9.0
+joblib==1.5.3
 jupyterlab
+
+# Testing
+pytest==9.0.3
+
+# Note: scikit-bio is intentionally omitted. Diversity metrics in src/features.py
+# are implemented directly to avoid a numpy-2.x-sensitive dependency.
