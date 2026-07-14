@@ -1,99 +1,140 @@
-# IBD Microbiome Leakage: Does Data Leakage Change the Biological Story?
+# Crohn's Disease Prediction from Gut Microbiome Data
+
+Predicting Crohn's disease status from 16S/metagenomic sequencing data, combining classical ML, microbiome foundation model embeddings, and an LLM agent for literature-grounded biomarker interpretation.
 
 ## Overview
 
-Can a single stool-sample microbiome profile tell Crohn's disease from a healthy gut — and *how honestly* can we measure that?
+This project predicts Crohn's disease (an IBD subtype) from gut microbiome composition and identifies which microbial taxa drive that prediction. It goes beyond a standard classification pipeline in three ways:
 
-This project builds an interpretable machine-learning pipeline on the HMP2 (iHMP) IBD cohort, then stress-tests its own results against the trap that sinks most microbiome-ML projects: **patient-level data leakage**.
+1. **Baseline vs. foundation model comparison** — classical ML on hand-engineered abundance features, benchmarked against a pretrained microbiome foundation model's embeddings as input features
+2. **Cross-study validation** — evaluation designed to avoid batch-effect leakage (train/test splits respect study origin, not just random splits), a common failure mode in published microbiome ML work
+3. **Agentic biomarker interpretation** — an LLM agent takes the model's top predictive taxa (via SHAP) and cross-references them against literature (RAG over PubMed) to flag known vs. novel candidate biomarkers, producing a cited report rather than a bare feature-importance list
 
-Most microbiome-ML work stops at "leakage inflates accuracy." This project goes further and asks a sharper question:
+## Motivation
 
-> **Does leakage change the biological story the model tells you — not just how well it performs, but *which taxa it says matter*?**
+Most microbiome disease-prediction pipelines stop at a feature-importance plot. This project treats that plot as the *start* of the interesting question — is this taxon a known IBD biomarker, or a potentially novel one worth flagging? — and automates that literature check.
 
-A naive model might hit 0.90 AUC and confidently point to Taxon X as the key driver of Crohn's disease. A properly validated ("honest") model might hit 0.75 AUC and point to Taxon Y instead. If those disagree, leakage isn't just making results look better than they are — it's actively misleading the biological conclusions drawn from the model. That's the headline finding this project is built to surface.
+## Pipeline
+
+```
+Raw sequencing data (16S/metagenomic)
+        │
+        ▼
+Preprocessing (OTU/ASV table, relative abundance normalization)
+        │
+        ├──► Hand-engineered features ──► Classical ML (RF, XGBoost)
+        │
+        └──► Foundation model embeddings ──► Classifier
+        │
+        ▼
+Evaluation (cross-study CV, accuracy/AUC, calibration)
+        │
+        ▼
+SHAP feature importance
+        │
+        ▼
+Biomarker interpretation agent (RAG over literature)
+        │
+        ▼
+Cited report: known vs. novel candidate biomarkers
+```
 
 ## Data
 
-This project uses the **HMP2 / iHMP** (Integrative Human Microbiome Project) IBD cohort — a longitudinal dataset tracking gut microbiome composition in subjects with Crohn's disease (CD), ulcerative colitis (UC), and non-IBD controls over multiple timepoints.
+- Source: [fill in — e.g. iHMP/HMP2 IBD cohort, public 16S dataset]
+- Samples: [n cases / n controls]
+- Modality: 16S rRNA / shotgun metagenomic sequencing
+- Preprocessing: [QIIME2 / DADA2 / other — fill in]
 
-Key structural fact this project is built around: **subjects contribute multiple stool samples over time.** Naively splitting at the *sample* level (rather than the *subject* level) lets samples from the same person appear in both train and test sets — the core source of leakage this project investigates.
+## Methods
 
-## Repo Structure
+### Baseline model
+Random Forest / XGBoost on relative abundance features at [genus/species] level.
+
+### Foundation model embeddings
+Taxa/sample embeddings from a pretrained microbiome transformer, used as input features to a lightweight downstream classifier. Compared head-to-head against the baseline on identical train/test splits.
+
+### Cross-study validation
+Splits constructed so that no study appears in both train and test sets, to measure generalization rather than within-study fit.
+
+### Biomarker interpretation agent
+1. Extract top-*k* predictive taxa via SHAP
+2. For each taxon, retrieve relevant literature (PubMed/RAG index)
+3. LLM agent classifies each as "established IBD biomarker" (with citations) or "understudied/novel candidate" (with biological rationale)
+4. Output: structured, cited markdown report
+
+## Results
+
+| Approach | Accuracy | AUC | Notes |
+|---|---|---|---|
+| Baseline (RF/XGBoost, raw abundance) | — | — | random split |
+| Baseline (RF/XGBoost, raw abundance) | — | — | cross-study split |
+| Foundation model embeddings + classifier | — | — | random split |
+| Foundation model embeddings + classifier | — | — | cross-study split |
+
+*[Fill in after running experiments]*
+
+## Repo structure
 
 ```
-ibd-microbiome-leakage/
-├── src/
-│   ├── data.py          # load HMP2 tables, merge taxonomy/metadata, subject ID mapping
-│   ├── features.py       # CLR transform, filtering, feature matrix construction
-│   ├── splits.py         # naive split, GroupKFold, StratifiedGroupKFold, nested CV
-│   ├── models.py         # RF, LogReg, XGBoost wrappers, consistent interface
-│   ├── importance.py      # SHAP computation, importance extraction per model/fold
-│   ├── stability.py       # rank correlation, top-k overlap, bootstrap CI on importance rankings
-│   └── evaluate.py        # AUC, calibration, significance testing
-├── notebooks/
-│   ├── 01_data_and_eda.ipynb
-│   ├── 02_preprocessing_features.ipynb
-│   ├── 03_naive_model_the_trap.ipynb
-│   ├── 04_leakage_diagnosis_and_fix.ipynb
-│   ├── 05_importance_stability.ipynb      ← headline notebook
-│   └── 06_paper_grounding.ipynb            ← Topçuoğlu framework + Lloyd-Price validation
-├── tests/
-│   └── test_splits.py     # unit tests: assert zero subject overlap in grouped CV
-├── config/
-│   └── experiment.yaml
+├── data/               # raw + processed data (not committed if large/sensitive)
+├── preprocessing/       # OTU/ASV table generation, normalization
+├── models/
+│   ├── baseline.py       # classical ML pipeline
+│   └── embeddings.py     # foundation model embedding extraction + classifier
+├── eval/
+│   └── cross_study_cv.py
+├── agent/
+│   ├── biomarker_agent.py  # SHAP -> RAG -> report pipeline
+│   └── literature_index/   # RAG index over relevant literature
+├── reports/              # generated biomarker reports
 └── README.md
 ```
-
-## Project Narrative
-
-### Act 1 — Data Foundation (`01`, `02`)
-Load HMP2 taxonomic abundance and metadata tables, resolve the subject-sample structure, apply a CLR (centered log-ratio) transform to handle the compositional nature of microbiome data, and build the final feature matrix. Document class balance (CD vs. healthy) and how many samples exist per subject.
-
-### Act 2 — The Trap (`03`)
-Train three model families (Logistic Regression, Random Forest, XGBoost) on a **naive, random sample-level split**. Report AUC — expect it to look strong. Compute SHAP feature importances and save them as the "naive" importance rankings.
-
-### Act 3 — The Fix (`04`)
-Show the smoking gun: subject ID overlap between the train and test sets from Act 2. Re-run everything using `StratifiedGroupKFold` grouped by subject, with nested cross-validation for hyperparameter tuning so tuning itself doesn't leak. Report the corrected ("honest") AUC — expect a real drop. Recompute SHAP importances as the "honest" rankings.
-
-### Act 4 — Stability Analysis (`05`, the headline result)
-For each model family, compare naive vs. honest feature importance rankings using:
-- Spearman rank correlation between naive and honest taxon rankings
-- Top-k overlap (e.g., do the top 10 taxa agree between naive and honest models?)
-- Bootstrapped confidence intervals across CV folds
-- A summary rank-shift figure visualizing how each taxon's importance moves from naive to honest
-
-**Target finding:** importance rankings are *less stable* than the AUC gap alone would suggest — even models with only moderate accuracy inflation can substantially reorder which taxa they implicate, because leakage lets models exploit subject-specific noise that happens to correlate with a convenient subset of taxa.
-
-### Act 5 — Grounding (`06`)
-Cross-check the honest model's top taxa against known CD-associated findings from Lloyd-Price et al. (2019) — e.g., *Faecalibacterium* depletion, increased Proteobacteria — to confirm the honest model is capturing real biology, not just noise. Cite Topçuoğlu et al.'s (2020) ML methodology framework to justify the cross-validation design choices made throughout.
-
-## Key Finding (fill in once complete)
-
-> *One-paragraph summary once results are in: naive cross-validation doesn't just overestimate performance — it changes which biology you'd report.*
-
-## Methodology References
-
-- **Lloyd-Price et al., 2019, *Nature*** — source paper for the HMP2/iHMP cohort; used here to validate that the honest model's top taxa align with established CD-associated findings.
-- **Topçuoğlu et al., 2020, *mSystems*** — "A Framework for Effective Application of Machine Learning to Microbiome-Based Classification Problems"; used here to justify cross-validation and split design choices.
 
 ## Setup
 
 ```bash
 git clone <repo-url>
-cd ibd-microbiome-leakage
+cd <repo-name>
 pip install -r requirements.txt
 ```
 
-Run notebooks in order, `01` through `06`. Configuration (model hyperparameters, CV folds, random seeds) is centralized in `config/experiment.yaml`.
-
-## Testing
+## Usage
 
 ```bash
-pytest tests/
+# Run baseline model
+python models/baseline.py --data data/processed/
+
+# Extract foundation model embeddings and train classifier
+python models/embeddings.py --data data/processed/
+
+# Run cross-study evaluation
+python eval/cross_study_cv.py
+
+# Generate biomarker interpretation report
+python agent/biomarker_agent.py --model models/best_model.pkl
 ```
 
-`test_splits.py` asserts zero subject-ID overlap between train and test folds under the grouped CV strategy — this is the correctness check for the entire leakage-fix logic.
+## Tech stack
 
-## Status
+- **Data processing:** QIIME2 / DADA2, pandas
+- **Classical ML:** scikit-learn, XGBoost
+- **Foundation model:** [name/checkpoint used]
+- **Agent/RAG:** [LLM API used], vector store for literature retrieval
+- **Explainability:** SHAP
 
-🚧 In progress — see `notebooks/` for current state of each phase.
+## Limitations
+
+- Batch effects across studies remain a known confounder in microbiome ML; cross-study validation mitigates but does not eliminate this
+- The biomarker agent's "novel candidate" flags are hypotheses for further investigation, not validated findings
+- [Add dataset-size, demographic, or other limitations specific to your data]
+
+## Future work
+
+- Extend to shotgun metagenomic functional (pathway-level) features, not just taxonomic
+- Persist agent-generated hypotheses across runs to build a growing candidate-biomarker knowledge base
+- Multimodal integration with clinical metadata
+
+## License
+
+[fill in]
